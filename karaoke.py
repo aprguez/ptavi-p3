@@ -10,40 +10,35 @@ import os
 import json
 
 class KaraokeLocal():
+
     def __init__(self, fichero):
         parser = make_parser()
         cHandler = SmallSMILHandler()
         parser.setContentHandler(cHandler)
-        try:
-            parser.parse(open(fichero))
-            self.lista = cHandler.get_tags()
-        except IOError:
-            sys.exit("Error del fichero")
-        
+        parser.parse(open(fichero))
+        self.lista = cHandler.get_tags()
 
     def __str__(self):
-        
-        salida = ""
-        for elemento in self.lista:
-            nombre = elemento['etiqueta']
-            salida == nombre
-            for atributo in elemento:
-                if atributo != "etiqueta" and elemento [atributo] != "":
-                    salida == "\t" + atributo + ":" + elemento[atributo]
-            salida == "\n"
-        
-        return salida
+        cadenageneral = ""
+        for atributos in self.lista:
+            dic = atributos[1]
+            cadena = ""
+            for clave in dic.keys():
+                if dic[clave] != "":
+                    cadena = cadena + "\t" + clave + '="' + dic[clave] + '"'
+            cadenageneral = cadenageneral + atributos[0] + cadena
+            if atributos != self.lista[-1]:
+                cadenageneral = cadenageneral + "\n"
+        return cadenageneral
 
     def do_local(self):
         for elemento in self.lista:
-            nombre = elemento['etiqueta']
             for atributo in elemento:
                 if atributo == "src":
-                    recurso = elemento['src'] 
+                    recurso = elemento['src']
                     os.system("wget -q" + recurso)
                     recurso = recurso.split("/")[-1]
                     elemento["src"] = recurso
-        return self.lista
                     
     
     def to_json(self, fichero):
@@ -54,6 +49,7 @@ class KaraokeLocal():
             json.dump(nuevojson, ficherojson)
 
 if __name__ == "__main__":
+
     try:
         fichero = sys.argv[1]
     except IndexError:
@@ -61,7 +57,6 @@ if __name__ == "__main__":
     karaoke = KaraokeLocal(fichero)
     print(karaoke.__str__())
     karaoke.to_json(fichero)
-    karaoke.to_json("local.json")
     karaoke.do_local()
-    print(karaoke)
-                       
+    karaoke.to_json("local.json")
+    print(karaoke.__str__())                   
